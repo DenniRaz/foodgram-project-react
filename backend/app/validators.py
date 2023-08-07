@@ -14,5 +14,5 @@ def validate_HEX_format(value):
         webcolors.normalize_hex(value)
     except ValueError:
         raise ValidationError(
-            _('The color can only be recorded in HEX format')
+            _('The color can only be recorded in HEX format'),
         )

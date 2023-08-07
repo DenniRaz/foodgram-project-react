@@ -17,4 +17,4 @@ class CustomUser(UserAdmin):
         'last_name',
         'password',
     )
-    search_fields = ('username', 'email')
+    list_filter = ('email', 'username')

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    'django_filters',
     'users.apps.UsersConfig',
     'app.apps.AppConfig',
     'api.apps.ApiConfig',
@@ -133,12 +134,14 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    ),
-
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
+}
+
+DJOSER = {
+    'SERIALIZERS': {
+        'current_user': 'api.serializers.UserSerializer'
+    },
 }
 
 LOAD_DATA_DIR = os.path.join(BASE_DIR, 'data')

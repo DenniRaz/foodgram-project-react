@@ -13,16 +13,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with open(
                 f'{LOAD_DATA_DIR}/ingredients.csv',
-                encoding='utf-8'
+                encoding='utf-8',
         ) as csvfile:
             reader = csv.reader(csvfile)
             temp_data = [Ingredient(
                 name=row[0],
                 measurement_unit=row[1],
             ) for row in reader]
-
             Ingredient.objects.bulk_create(temp_data)
-
             self.stdout.write(self.style.SUCCESS(
                 'Ingredients have been uploaded to the database')
             )

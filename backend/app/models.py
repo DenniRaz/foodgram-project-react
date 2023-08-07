@@ -36,6 +36,12 @@ class Tag(models.Model):
         verbose_name = _('tag')
         verbose_name_plural = _('tags')
         ordering = ('name',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=('name', 'color', 'slug'),
+                name='unique_tag',
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -57,6 +63,12 @@ class Ingredient(models.Model):
         verbose_name = _('ingredient')
         verbose_name_plural = _('ingredients')
         ordering = ('name',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='unique_ingredient',
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -89,6 +101,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         to=Tag,
         related_name='recipes',
+        through='TagForRecipe',
         verbose_name=_('tags'),
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -130,7 +143,7 @@ class IngredientInRecipe(models.Model):
         validators=(
             MinValueValidator(
                 limit_value=1,
-                message=_('minimum amount is 1 minute'),
+                message=_('minimum amount is 1'),
             ),
         ),
     )
@@ -139,15 +152,46 @@ class IngredientInRecipe(models.Model):
         verbose_name = _('ingredient in recipe')
         verbose_name_plural = _('ingredients in recipe')
         ordering = ('recipe',)
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['recipe', 'ingredient'],
+                fields=('recipe', 'ingredient'),
                 name='unique_ingredient_in_recipe',
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{self.recipe} contains {self.ingredient}'
+
+
+class TagForRecipe(models.Model):
+    """Tag for recipe model."""
+
+    recipe = models.ForeignKey(
+        to=Recipe,
+        on_delete=models.CASCADE,
+        related_name='tag_in_recipes',
+        verbose_name=_('recipe'),
+    )
+    tag = models.ForeignKey(
+        to=Tag,
+        on_delete=models.CASCADE,
+        related_name='tag_in_recipes',
+        verbose_name=_('tag'),
+    )
+
+    class Meta:
+        verbose_name = _('tag in recipe')
+        verbose_name_plural = _('tags in recipe')
+        ordering = ('recipe',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=('recipe', 'tag'),
+                name='unique_tag_in_recipe',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.recipe} - {self.tag}'
 
 
 class Follow(models.Model):
@@ -170,12 +214,12 @@ class Follow(models.Model):
         verbose_name = _('subscription')
         verbose_name_plural = _('subscriptions')
         ordering = ('user',)
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'following'],
+                fields=('user', 'following'),
                 name='unique_follow',
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{self.user} subscriber of the {self.following}'
@@ -201,12 +245,12 @@ class Favourite(models.Model):
         verbose_name = _('favourite')
         verbose_name_plural = _('favourites')
         ordering = ('user',)
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_favourite',
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{self.user} favorite {self.recipe}'
@@ -232,12 +276,12 @@ class ShoppingCart(models.Model):
         verbose_name = _('shopping cart')
         verbose_name_plural = _('shopping carts')
         ordering = ('user',)
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_shopping_cart',
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{self.user} added {self.recipe} to the cart'
