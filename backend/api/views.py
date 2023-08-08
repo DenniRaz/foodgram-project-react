@@ -151,6 +151,39 @@ class RecipeViewSet(ModelViewSet):
         context = super().get_serializer_context()
         return context
 
+    def addition_and_removal(self, request, pk, query, msg):
+        """
+        Universal method for adding and removing
+        objects from favorites and shopping lists.
+        """
+
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        obj = query.objects.filter(user=user, recipe=recipe)
+        if request.method == 'POST':
+            if obj.exists():
+                return Response(
+                    data={
+                        f'errors': 'the recipe has already '
+                                   f'been added to {msg}',
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            query.objects.create(user=user, recipe=recipe)
+            serializer = FavouriteAndShoppingCartSerializer(recipe)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        if request.method == 'DELETE':
+            if obj.exists():
+                obj.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                data={f'errors': f'the recipe is not in {msg}'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
     @action(
         methods=('post', 'delete'),
         detail=True,
@@ -159,32 +192,7 @@ class RecipeViewSet(ModelViewSet):
     def favorite(self, request, pk):
         """Method of interaction with favorite recipes."""
 
-        user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-        favorites = Favourite.objects.filter(user=user, recipe=recipe)
-        if request.method == 'POST':
-            if favorites.exists():
-                return Response(
-                    data={
-                        'errors': 'the recipe has already '
-                                  'been added to favorites',
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            Favourite.objects.create(user=user, recipe=recipe)
-            serializer = FavouriteAndShoppingCartSerializer(recipe)
-            return Response(
-                data=serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
-        if request.method == 'DELETE':
-            if favorites.exists():
-                favorites.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                data={'errors': 'the recipe is not in favorites'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        return self.addition_and_removal(request, pk, Favourite, 'favorites')
 
     @action(
         methods=('post', 'delete'),
@@ -194,32 +202,12 @@ class RecipeViewSet(ModelViewSet):
     def shopping_cart(self, request, pk):
         """Method of interaction with shopping cart."""
 
-        user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-        shopping_cart = ShoppingCart.objects.filter(user=user, recipe=recipe)
-        if request.method == 'POST':
-            if shopping_cart.exists():
-                return Response(
-                    data={
-                        'errors': 'the recipe has already '
-                                  'been added to shopping cart',
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-            serializer = FavouriteAndShoppingCartSerializer(recipe)
-            return Response(
-                data=serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
-        if request.method == 'DELETE':
-            if shopping_cart.exists():
-                shopping_cart.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                data={'errors': 'the recipe is not in shopping cart'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        return self.addition_and_removal(
+            request,
+            pk,
+            ShoppingCart,
+            'shopping cart',
+        )
 
     @action(
         detail=False,
@@ -229,9 +217,8 @@ class RecipeViewSet(ModelViewSet):
     def download_shopping_cart(self, request):
         """Method for downloading ingredients from the shopping cart."""
 
-        shopping_cart = ''
         user = request.user
-        if not user.shopping_carts.all().exists():
+        if not user.shopping_carts.exists():
             return Response(
                 data={'errors': 'the shopping cart is empty'},
                 status=status.HTTP_404_NOT_FOUND,
@@ -244,8 +231,9 @@ class RecipeViewSet(ModelViewSet):
         ).annotate(
             amount=Sum('ingredient_in_recipes__amount'),
         )
-        for ingredient in ingredients:
-            shopping_cart += f'{ingredient["name"]} ' \
-                             f'({ingredient["measurement_unit"]}) - ' \
-                             f'{ingredient["amount"]}\n'
+        shopping_cart = [''.join(
+            f'{ingredient["name"]} '
+            f'({ingredient["measurement_unit"]}) - '
+            f'{ingredient["amount"]}\n'
+        ) for ingredient in ingredients]
         return HttpResponse(shopping_cart, content_type='text/plain')
