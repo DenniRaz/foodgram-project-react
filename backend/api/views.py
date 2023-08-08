@@ -164,8 +164,8 @@ class RecipeViewSet(ModelViewSet):
             if obj.exists():
                 return Response(
                     data={
-                        f'errors': 'the recipe has already '
-                                   f'been added to {msg}',
+                        'errors': 'the recipe has already '
+                                  f'been added to {msg}',
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -180,7 +180,7 @@ class RecipeViewSet(ModelViewSet):
                 obj.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(
-                data={f'errors': f'the recipe is not in {msg}'},
+                data={'errors': f'the recipe is not in {msg}'},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
