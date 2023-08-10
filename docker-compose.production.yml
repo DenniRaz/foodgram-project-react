@@ -15,9 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: denniraz/foodgram_backend
     env_file: .env
     volumes:
       - backend_static_value:/app/static/
@@ -26,17 +24,13 @@ services:
       - db
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: denniraz/foodgram_frontend
     command: cp -r /app/build/. /static/
     volumes:
       - frontend_static_value:/static
 
   nginx:
-    build:
-      context: ./infra
-      dockerfile: Dockerfile
+    image: denniraz/foodgram_nginx
     ports:
       - "80:80"
     volumes:

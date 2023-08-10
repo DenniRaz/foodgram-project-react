@@ -197,13 +197,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def validate_ingredients(self, value):
-        for obj in value:
-            ingredient, amount = obj
-            if amount < 1:
-                raise serializers.ValidationError('Minimum amount is 1')
-            return value
-
     def create_ingredient(self, ingredients, recipe):
         """Ingredient creation method."""
 
