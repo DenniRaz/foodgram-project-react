@@ -115,3 +115,5 @@ DJOSER = {
 }
 
 LOAD_DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+CSRF_TRUSTED_ORIGINS = ['https://*.funfoodgram.sytes.net']

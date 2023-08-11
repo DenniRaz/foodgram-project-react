@@ -32,7 +32,7 @@ services:
   nginx:
     image: denniraz/foodgram_nginx
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - frontend_static_value:/usr/share/nginx/html/
       - backend_static_value:/var/html/static/

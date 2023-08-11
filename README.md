@@ -1,3 +1,6 @@
+https://funfoodgram.sytes.net/
+дминка: логин:admin@yandex.ru пароль:admin
+
 ![foodgram-project-react Workflow Status](https://github.com/xofmdo/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 # Продуктовый помощник Foodgram 
 
