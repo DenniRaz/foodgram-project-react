@@ -133,6 +133,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -174,6 +175,13 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request.user,
             recipe=obj,
         ).exists()
+
+    def get_image(self, obj):
+        """Method for image representation."""
+
+        image_path = obj.image.path
+        new_path = image_path.replace('/app', '')
+        return new_path
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
